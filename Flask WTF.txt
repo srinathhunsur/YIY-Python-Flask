@@ -1,0 +1,128 @@
+Topic:
+Flask Forms and User Input – I
+
+Sub topic:
+Flask-WTF, form
+creation, CSRF
+protection
+
+
+Learning outcomes:
+Create secure web forms
+Using Flask-WTF (Web Template Forms) and 
+Add CSRF protection.
+-------------------------------------------------------------------
+
+1. What is Flask-WTF? (Web Template Forms)
+• Flask-WTF is an extension for Flask that integrates WTForms, a Python library for handling web forms.
+• It makes form creation, validation, and CSRF protection simple and secure.
+• Instead of manually handling <form> HTML and validation in the route, Flask-WTF lets you define forms as Python classes.
+
+2. Why Use Flask-WTF?
+• Makes form handling cleaner (no messy request parsing)
+• Built-in validators (e.g., Required, Email, Length)
+• Auto-generates CSRF tokens for security
+• Easy to render forms in Jinja2 templates
+
+
+3. What is CSRF Protection?
+• CSRF = Cross-Site Request Forgery
+• It’s a type of attack where a malicious site tricks a logged-in user into submitting unwanted actions.
+• Flask-WTF automatically includes a hidden CSRF token in every form, and validates it on submission — blocking unauthorized requests.
+
+
+
+Note:
+• Install and configure Flask-WTF in a Flask application.
+• Create and use form classes using WTForms.
+• Render forms in Jinja2 templates with fields and validation errors.
+• Secure forms by enabling CSRF protection.
+• Handle user input safely on the server side.
+ 
+
+
+
+Simple Example — Creating a Secure Form
+1. Install Flask-WTF (Step 1 of 3)
+pip install flask-wtf
+
+2. app.py (Step 2 of 3)
+from flask import Flask, render_template, redirect, url_for
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'mysecretkey123'   # Needed for CSRF protection
+
+# Define a simple form
+class NameForm(FlaskForm):
+    name = StringField('Enter your name', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    form = NameForm()
+    if form.validate_on_submit():
+        user_name = form.name.data
+        return redirect(url_for('greet', username=user_name))
+    return render_template('form.html', form=form)
+
+@app.route('/greet/<username>')
+def greet(username):
+    return f"<h1>Hello, {username}!</h1>"
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+3. templates/form.html	(Step 3 of 3)
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flask-WTF Form</title>
+</head>
+<body>
+    <h1>Flask-WTF Example</h1>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}   <!-- CSRF token -->
+        <p>
+            {{ form.name.label }}<br>
+            {{ form.name(size=30) }}
+        </p>
+        <p>{{ form.submit() }}</p>
+
+        {% if form.name.errors %}
+            <ul style="color:red;">
+                {% for error in form.name.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </form>
+</body>
+</html>
+ 
+
+How it Works
+• The NameForm class defines a single text field and a submit button.
+• SECRET_KEY enables Flask-WTF’s CSRF protection.
+• form.hidden_tag() inserts a hidden CSRF token into the form automatically.
+• When the user submits, Flask-WTF validates both the field and the CSRF token before processing.
+
+
+Output
+1. Visit http://127.0.0.1:5000
+2. Enter your name and submit.
+3. You’ll be redirected to a greeting page:
+4. Hello, John!
+
+Note:
+• Flask-WTF simplifies form creation and validation.
+• CSRF protection is automatically handled using SECRET_KEY and hidden_tag().
+• Forms are defined in Python, rendered in HTML, and processed securely in routes.
+
+
+
+
+

@@ -1,0 +1,272 @@
+Templates and Jinja2 – II
+
+Filters, control structures, reusable components
+
+Enhance template functionality with filters,
+loops, and template inheritance.
+
+
+---------------------------------
+Flask
+• Flask is a lightweight Python web framework used to build web applications.
+• It helps you write server-side code to handle requests, process data, and return responses.
+
+• Flask makes it easy to:
+  o Create web pages and APIs
+  o Handle URLs and routes
+  o Connect to databases
+  o Render HTML templates dynamically
+
+Why Flask is Popular
+• Very simple to learn — ideal for beginners and professionals.
+• Flexible — you can add only what you need.
+• Perfect for both small projects and large applications.
+
+
+
+Note:
+-----------------------------------------
+VS Code doesn’t come with Flask built-in.
+You need the following:
+1. Python installed
+2. Python extension in VS Code
+3. Flask installed via pip
+
+(Optionally) a virtual environment for clean project management
+
+
+
+---------------
+Example (Basic Flask App) main.py
+---------------
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Hello, Flask!"
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+--------
+1. Create a project folder
+2. Write your python /flask program
+3. Open terminal and Type "python main.py" (name used for program)
+4. Visit: http://localhost:5000 and you'll see Hello, Flask!
+--------
+
+------------------------
+Jinja2
+• Jinja2 is a templating engine used by Flask to generate dynamic HTML pages.
+• It allows you to embed Python-like expressions inside HTML using special syntax:
+  o {{ ... }} for variables
+  o {% ... %} for control structures (loops, conditions, etc.)
+
+Why Jinja2 is Useful
+• Separates Python code (logic) from HTML code (presentation).
+• Makes web pages dynamic — content changes based on data.
+• Supports filters, loops, template inheritance, and more.
+
+
+Example (Jinja2 in Action) --- (program 1 of 2)
+app.py
+---------------------------------
+from flask import Flask, render_template
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    name = "Your Name"
+    return render_template('index.html', name=name)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
+--------------------------------------
+
+templates/index.html --- (program 2 of 2)
+----------------------
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jinja2 Example</title>
+</head>
+<body>
+    <h1>Hello, {{ name }}!</h1>
+</body>
+</html>
+
+-----------------
+1. Write your python/flask program app.py
+2. Open terminal and Type "python app.py" (name used for program)
+3. Visit: http://localhost:5000 and you'll see Hello, Your Name!
+Output:
+When you open the page, {{ name }} is replaced with Your Name dynamically.
+
+
+------------------------------------------------------------
+Flask					Jinja2
+------------------------------------------------------------
+A Python web framework		| A template engine for HTML
+Handles routing, logic, data	| Handles how data is displayed
+Runs server-side		| Runs inside templates
+Example: /home route		| Example: {{ name }} inside HTML
+------------------------------------------------------------
+
+
+
+
+Core Flask + Jinja2 concept:
+
+• Filters → to format output
+• Control structures → to use loops and conditions
+• Template inheritance → to reuse a base layout
+
+---------------------------
+1. Key Inputs / Concepts
+Filters
+• Used to format or transform variables in templates.
+• Example:
+ o {{ name|upper }} → Converts name to uppercase.
+ o {{ price|round(2) }} → Rounds price to 2 decimal places.
+
+----------------------
+2. Control Structures
+ For loop: iterate through a list or dictionary
+  {% for item in items %}
+    <p>{{ item }}</p>
+  {% endfor %}
+
+  If statement: add conditions
+  {% if user %}
+ 	  <p>Welcome, {{ user }}!</p>
+  {% else %}
+ 	  <p>Guest user</p>
+  {% endif %}
+
+------------------------------
+Template Inheritance (Reusable Components)
+• Create a base template with a common layout (example: header, footer).
+• Other templates extend it and fill in content using {% block %} tags.
+• This avoids repeating HTML structure on every page.
+
+
+Working on a simple Flask Program
+--------------------------------------
+app2.py		--- (Program 1 of 3)
+--------------------------------------
+from flask import Flask, render_template
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    user = "Your Name"
+    products = [
+        {"name": "Laptop", "price": 75000},
+        {"name": "Phone", "price": 30000},
+        {"name": "Tablet", "price": 18000}
+    ]
+    return render_template('home.html', user=user, products=products)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+------------------------------------
+templates/base.html --- (Program 2 of 3)
+(Reusable Layout)
+------------------------------------
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}My Flask Site{% endblock %}</title>
+</head>
+<body>
+    <header style="background:#007bff; color:white; padding:10px;">
+        <h1>My Flask Store</h1>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer style="background:#f0f0f0; text-align:center; padding:10px;">
+        <p>&copy; 2025 Flask Store</p>
+    </footer>
+</body>
+</html>
+
+-----------------------
+templates/home.html
+(Uses filters, loops, conditions, and extends the base)
+-----------------------
+{% extends 'base.html' %}
+
+{% block title %}Home - Flask Store{% endblock %}
+
+{% block content %}
+    <h2>Welcome, {{ user|upper }}!</h2>
+
+    <h3>Product List</h3>
+    <ul>
+        {% for p in products %}
+            <li>
+                {{ p.name }} - ₹{{ p.price|round(0) }}
+                {% if p.price > 50000 %}
+                    <strong>(Premium)</strong>
+                {% else %}
+                    (Affordable)
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+
+Note:
+This Program Demonstrates
+• Filters: {{ user|upper }}, {{ p.price|round(0) }}
+• Loops: {% for p in products %} to display each product
+• Conditions: {% if p.price > 50000 %} to check product price
+• Template Inheritance: home.html extends base.html and fills content blocks
+
+
+How to Run
+1. Create a folder (e.g., flask_jinja_demo)
+2. Inside it, create:
+	o app.py
+	o templates folder with base.html and home.html
+3. Run:
+4. python app.py
+5. Open http://localhost:5000 in your browser.
+
+
+Extension features for Practice
+• Add a “discount” filter that calculates 10% off prices.
+• Create another page (e.g., /about) that also extends base.html.
+• Use nested loops or an if condition to show different messages for empty lists.
+
+
+-------------------------------------------------------------
+1. Install Python
+2. Install VSCode
+3. Install Python extension in VSCode
+4. Create project folder
+
+Follow the instructions below
+
+1. python -m venv venv
+2. Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+3. .\venv\Scripts\Activate.ps1
+4. pip install flask
+5. python app.py (Write the program and then use the command example app.py)
+-------------------------------------------------------------
+
+
+
+
+
+
+
