@@ -1,0 +1,161 @@
+Flask Forms and User Input – II
+• Form Validation
+• Error Handling
+• Processing User Input
+• Input Validation & Secure Handling
+
+1. Form Validation:
+Form validation ensures that users enter correct and complete data before submission 
+
+Example: 
+no blank fields, valid email formats, valid username, date
+
+2. Error Handling
+Error handling helps display friendly messages when something goes wrong.
+---------------
+Android Mobile: 
+Use Termux App to execute Linux commands and also Flask 
+---------------
+
+Example 1: Basic Flask Form with Validation
+Python program
+----------------------------------------
+validate1.py
+
+from flask import Flask, render_template_string, request
+app = Flask(__name__)
+#Simple HTML form
+html_form = '''
+<form method="POST">
+  Name: <input type="text" name="username"><br><br>
+  Email: <input type="text" name="email"><br><br>
+  <input type="submit" value="Submit">
+</form>
+<p style="color:red;">{{ error }}</p>
+<p style="color:green;">{{ success }}</p>
+'''
+
+@app.route('/', methods=['GET', 'POST'])
+def form_example():
+    error = ''
+    success = ''
+    if request.method == 'POST':
+        name = request.form.get('username')
+        email = request.form.get('email')
+
+        # Validation checks
+        if not name or not email:
+            error = "All fields are required!"
+        elif '@' not in email:
+            error = "Invalid email address!"
+        else:
+            success = f"Welcome, {name}! Your email '{email}' is valid."
+
+    return render_template_string(html_form, error=error, success=success)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+----------------------------------------
+
+Note:
+• Checks for missing fields.
+• Ensures email has “@”.
+• Displays red error messages or green success messages.
+----------------------------------------
+
+
+
+2. Processing User Input
+>>Once validated, data is processed — stored, displayed, or used for calculations.
+>>Always clean or sanitize data to avoid security issues.
+
+Example 2: Processing User Input Safely
+--------------------------------------------
+process1.py
+
+from flask import Flask, request
+from markupsafe import escape  # Correct import
+
+app = Flask(__name__)
+
+@app.route('/greet', methods=['POST'])
+def greet_user():
+    username = request.form.get('username')
+    
+    # Escape input to prevent HTML injection
+    safe_name = escape(username)
+    return f"Hello, {safe_name}! Nice to meet you."
+
+@app.route('/')
+def index():
+    return '''
+    <form method="POST" action="/greet">
+        Enter your name: <input type="text" name="username">
+        <input type="submit" value="Greet">
+    </form>
+    '''
+
+if __name__ == '__main__':
+    app.run(debug=True)
+-------------------------------------------
+Secure Handling:
+•escape() prevents malicious code like <script> from executing in browser output.
+---------------------------------------------
+
+3. Implementing Input Validation and Secure Data Handling
+>> Use libraries like Flask-WTF for advanced validation.
+>> It includes CSRF protection (Cross-Site Request Forgery) and built-in validators.
+
+Example 3: Using Flask-WTF for Validation
+Install Flask-WTF:
+>>pip install flask-wtf
+>>pip instal email-validator
+---------------------------
+processvalidation1.py
+
+import email_validator
+from flask import Flask, render_template_string
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired, Email
+
+app = Flask(__name__)
+app.secret_key = 'securekey123'  # Needed for CSRF protection
+
+class UserForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Submit')
+
+html_page = '''
+<form method="POST">
+  {{ form.hidden_tag() }}
+  {{ form.name.label }} {{ form.name(size=20) }}<br><br>
+  {{ form.email.label }} {{ form.email(size=20) }}<br><br>
+  {{ form.submit() }}
+</form>
+
+{% for field, errors in form.errors.items() %}
+  {% for error in errors %}
+    <p style="color:red;">{{ error }}</p>
+  {% endfor %}
+{% endfor %}
+'''
+@app.route('/', methods=['GET', 'POST'])
+def user_form():
+    form = UserForm()
+    if form.validate_on_submit():
+        return f"Welcome, {form.name.data}! Email: {form.email.data}"
+    return render_template_string(html_page, form=form)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+-----------------------
+Note:
+• Automatic field validation (DataRequired, Email)
+• Built-in CSRF protection
+• Clean, readable form structure
+
+
