@@ -1,0 +1,162 @@
+Flask with Databases – I
+• SQLAlchemy setup and configuration
+• ORM (Object Relational Mapping) basics
+• Defining models
+• Connecting Flask to a database
+
+1. Introduction – Flask with Databases
+Flask can connect to databases (like SQLite, MySQL, PostgreSQL) using SQLAlchemy, a powerful Object Relational Mapper (ORM).
+ORM allows you to interact with a database using Python classes and objects instead of raw SQL commands.
+
+2. SQLAlchemy Setup and Configuration
+Installation
+Run these commands in your terminal:
+>>pip install flask
+>>pip install flask_sqlalchemy
+
+3. Basic Flask + SQLAlchemy Application
+Example 1: Simple Setup and Model Definition
+-----------------------------------------------
+Filename: appsql1.py
+
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+
+# Step 1: Configure Database (Here we use SQLite)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///students.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Step 2: Initialize SQLAlchemy
+db = SQLAlchemy(app)
+
+# Step 3: Define a Model (ORM Class)
+class Student(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
+    email = db.Column(db.String(100), unique=True)
+
+# Step 4: Create the Database and Tables
+with app.app_context():
+    db.create_all()
+
+@app.route('/')
+def home():
+    return "Database connected successfully with SQLAlchemy!"
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+----------------------------------------------------------
+Note
+• SQLALCHEMY_DATABASE_URI: Database connection string.
+Here, sqlite:///students.db creates a local database file.
+• db.Model: Represents a table in the database.
+• db.Column: Represents table columns and data types.
+• db.create_all(): Creates all tables defined in your models.
+
+
+Run it:
+python appsql1.py
+It will create a file students.db in the same directory.
+(It will create a folder instance\students.db)
+---------------------------------------------------------
+
+4. ORM Basics – Adding and Retrieving Data
+Example 2: Insert and Fetch Records using ORM
+----------------------
+Filename: appsql2.py
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///students.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+class Student(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
+    email = db.Column(db.String(100), unique=True)
+
+# Create tables if not exist
+with app.app_context():
+    db.create_all()
+
+@app.route('/add')
+def add_student():
+    # Create new student object
+    s1 = Student(name="John Doe", email="john@example.com")
+    db.session.add(s1)
+    db.session.commit()
+    return "Student added successfully!"
+
+@app.route('/show')
+def show_students():
+    students = Student.query.all()   # Retrieve all records
+    result = ""
+    for s in students:
+        result += f"{s.id} - {s.name} - {s.email}<br>"
+    return result
+
+if __name__ == '__main__':
+    app.run(debug=True)
+------------------------
+Note
+• db.session.add() → Adds a record to the session.
+• db.session.commit() → Saves all pending changes.
+• Student.query.all() → Retrieves all students from the database.
+Test it:
+Run the appsql2.py
+Open http://127.0.0.1:5000/add → Adds a student.
+Open http://127.0.0.1:5000/show → Displays all students.
+------------------------------
+
+5. Example – Handling Forms with Database
+Example 3: Flask Form + SQLAlchemy Integration
+--------------------------------
+Filename: appsql3.py
+from flask import Flask, render_template_string, request
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///students.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+class Student(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
+    email = db.Column(db.String(100), unique=True)
+
+with app.app_context():
+    db.create_all()
+
+form_template = """
+<h2>Add Student</h2>
+<form method="POST">
+    Name: <input type="text" name="name"><br><br>
+    Email: <input type="email" name="email"><br><br>
+    <input type="submit" value="Add">
+</form>
+"""
+
+@app.route('/', methods=['GET', 'POST'])
+def add_student():
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        s = Student(name=name, email=email)
+        db.session.add(s)
+        db.session.commit()
+        return f"Student {name} added successfully!"
+    return render_template_string(form_template)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+----------------------------------------
+Note:
+• This combines Flask form input with SQLAlchemy ORM.
+• The form takes user data and stores it in the students table.
+----------------------------------------
