@@ -1,0 +1,36 @@
+Assignment 1: 
+Book Store REST API (Beginner Level)
+• Create a new Flask project and name the file app.py.
+• Inside the program, create an in-memory list named books to store book records.
+• Create a POST API /add_book that accepts a JSON body containing:
+  o "title"
+  o "author"
+  o "price"
+• When a book is added, the API must:
+  o Generate an ID
+  o Store the book as a dictionary
+  o Return a JSON confirming the addition
+• Create a GET API /books that returns the entire list of books in JSON format.
+• Create a GET API /book/<id> that returns a single book record based on the ID.
+• Create a DELETE API /book/<id> that removes a book from the list.
+• Test all APIs using Postman (GET, POST, DELETE operations).
+
+
+
+
+Assignment 2: Student Marks Calculator API (Medium Level)
+• Create a file named marks_api.py using Flask.
+• Create a list called students to temporarily store data.
+• Create a POST API /add_marks that accepts JSON with:
+  o "name"
+  o "math"
+  o "science"
+  o "english"
+• After receiving the data:
+  o Calculate total marks (math + science + english)
+  o Calculate average marks
+  o Add total and average to the student record
+• Create a GET API /students to return all student records along with total and average.
+• Use Postman to test:
+  o Adding a student
+  o Fetching the list of students
