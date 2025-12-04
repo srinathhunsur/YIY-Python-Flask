@@ -1,6 +1,73 @@
+Theory concepts points for 
+Authentication and Security – I 
+Password hashing, user sessions, login forms
+
+Step by step Program to 
+Implement password security and user sessions.
+
+
+Authentication & Security – I 
+>>(focused on password hashing, sessions, login forms), 
+>>step-by-step Flask program you can run that demonstrates password hashing + user sessions (register/login/logout + protected route). 
+
+
+Authentication and Security 
+1. Authentication vs Authorization
+• Authentication: confirm who a user is (login).
+• Authorization: decide what an authenticated user may do (roles/permissions).
+
+2. Password storage: never store plain text
+• Store only a hash of the password (one-way).
+• Use a modern, slow, salted hash function (bcrypt, Argon2, PBKDF2).
+• Salt prevents identical passwords from producing identical hashes; use per-user salt (most libraries handle this).
+
+
+3. Hashing algorithms
+• Fast hashes (MD5, SHA1, SHA256) → not suitable alone because brute force is fast.
+• Use key derivation / slow algorithms: PBKDF2, bcrypt, scrypt, Argon2 (Argon2 is currently best practice).
+• Use well-maintained libraries — don’t roll your own.
+
+4. Password verification
+• Compare submitted password with stored hash using library provided verify function.
+• Use constant-time compare where relevant.
+
+5. Login forms
+• Use HTTPS (TLS) to protect credentials in transit.
+• Use CSRF protection on forms.
+• Validate and sanitize inputs (but password fields should be handled carefully).
+• Use rate limiting + account lockout to mitigate brute force.
+
+6. Sessions
+• Sessions let the server remember an authenticated user across requests.
+• Session may be cookie-based (cookie stores session id or signed data).
+• Use secure cookie flags: Secure, HttpOnly, SameSite=strict/lax.
+• Set session timeout and automatic logout on inactivity.
+
+7. Session management improvements
+• Regenerate session identifier after login (prevents fixation).
+• Store minimal sensitive info in session (user id, role).
+• Invalidate session on logout.
+• Protect against XSS (reduces cookie theft) and CSRF.
+
+8. Extra protections
+• Enforce strong password policy and offer password managers.
+• Use multi-factor authentication (MFA) for extra security.
+• Logging and monitoring for abnormal login patterns.
+• Use HTTPS everywhere (HSTS).
+• Use Content Security Policy (CSP) and sanitize outputs to reduce XSS risk.
+
+
+
+
+>> This example uses: Flask + Flask-Login + SQLAlchemy + Werkzeug password hashing. 
+>> It demonstrates register, login, logout, protected route and sets secure cookie flags.
+
+
 Requirements
 Install these (use virtualenv):
-pip install Flask Flask-Login Flask-WTF Flask-SQLAlchemy
+>> pip install Flask Flask-Login Flask-WTF Flask-SQLAlchemy
+>> Project layout (single file demo)
+
 
 
 This example uses: Flask + Flask-Login + SQLAlchemy + Werkzeug password hashing. 
@@ -147,3 +214,18 @@ if __name__ == '__main__':
 
 
 
+
+
+
+Install these (use virtualenv):
+pip install Flask Flask-Login Flask-WTF Flask-SQLAlchemy
+----------------------------
+How it works (step-by-step)
+1. User registration: RegisterForm --> server receives password --> user.set_password() uses generate_password_hash() to create a salted PBKDF2 hash stored in DB.
+
+2. Login: Form submits username/password --> server fetches user, check_password_hash() compares safely --> on success login_user(user) sets Flask-Login session.
+
+3. Session handling: Flask-Login stores session info (user id) in secure cookie; cookie flags set in app config (HttpOnly, Secure, SameSite) to reduce theft.
+
+4. Protected pages: @login_required decorator forces auth; unauthorized users are redirected to the login view.
+5. Logout: Calls logout_user() to clear the session.
